@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        /* Style for the green section */
+        .green-section {
+            background-color: #4caf50; /* medium green color */
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Style for the white section */
+        .white-section {
+            background-color: #FFFFFF; /* white color */
+            padding: 20px;
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* Style for the logo */
+        .logo {
+            display: block;
+            margin: auto;
+            height: 90px;
+            width: 90px;
+        }
+
+        /* Style for the form */
+        form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+        }
+
+        /* Style for the spinner */
+        .spinner {
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Style for the uploaded image */
+        #uploaded-image {
+            display: block;
+            margin: auto;
+            max-width: 500px;
+            max-height: 500px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="green-section">
+        <img src="static/logo.png" alt="Logo" class="logo">
+    </div>
+    <div class="white-section">
+        <form id="upload-form" method="POST" action="/classify" enctype="multipart/form-data">
+            <label for="file">Upload an image:</label>
+            <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png" required><br><br>
+            <label for="algorithm">Select a classification Approach:</label>
+            <select id="algorithm" name="algorithm">
+                <option value="model1">Approach 1</option>
+                <option value="model2">Approach 2</option>
+            </select><br><br>
+            <button type="submit" class="btn btn-primary">Classify</button>
+        </form>
+        <div id="spinner" class="spinner" style="display:none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="text-primary">Classifying...</p>
+        </div>
+        <div id="result"></div>
+        <img id="uploaded-image" style="display:none">
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#upload-form').submit(function(event) {
+            event.preventDefault(); // Prevent page from refreshing on form submission
+
+            // Show spinner and hide previous result and uploaded image (if any)
+            $('#spinner').show();
+            $('#result').hide();
+            $('#uploaded-image').hide();
+
+            // Get form data
+            var formData = new FormData(this);
+
+            // Send AJAX request to server to classify the image
+            $.ajax({
+                url: '/classify',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Hide spinner and show result
+                    $('#spinner').hide();
+                    $('#result').show();
+
+                    // Display result in the result div
+                    $('#result').html(response.result);
+
+                    // Display uploaded image (if any)
+                    if (response.image_path) {
+                        $('#uploaded-image').attr('src', response.image_path);
+                        $('#uploaded-image').show();
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Hide spinner and show error message
+                    $('#spinner').hide();
+                    $('#result').show();
+                    $('#result').html('An error occurred while classifying the image. Please try again later.');
+                }
+            });
+        });
+    });
+</script>
